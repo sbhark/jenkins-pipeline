@@ -6,46 +6,44 @@ def call(body) {
     body()
 
     // Set properties to variables, so you dont need to call config on every call
-    def nodeLabel = config.nodeLabel
+    def nodeLabel = config.nodeLabel != null ? config.nodeLabel : "master"
     def buildTimeout = config.buildTimeout != null ? config.buildTimeout : 15
     def projectName = config.projectName
 
-    pipeline {
-        timestamps {
-            // Set build agent if defined
-            nodeLabel != null ? agent { label "${nodeLabel}" } : agent any
+    node(nodeLabel) {
+        pipeline {
+            timestamps {
+                def workspace = pwd()
+                def gitBranch = env.BRANCH_NAME
+                def buildNumber = env.BUILD_NUMBER
+                def packageName = "${projectName}-${gitBranch}-${buildNumber}.zip"
 
-            def workspace = pwd()
-            def gitBranch = env.BRANCH_NAME
-            def buildNumber = env.BUILD_NUMBER
-            def packageName = "${projectName}-${gitBranch}-${buildNumber}.zip"
+                stages {
+                    stage("Checkout ${projectName} from SCM") {
+                        checkout scm
+                    }
 
-            stages {
-                stage("Checkout ${projectName} from SCM") {
-                    checkout scm
-                }
-
-                stage('Building project') {
-                    timeout(time: buildTimeout, unit: 'MINUTES') {
-                        steps {
-                            sh 'mkdir build'
-                            dir('build') {
-                                sh 'cmake ..'
-                                sh 'make'
+                    stage('Building project') {
+                        timeout(time: buildTimeout, unit: 'MINUTES') {
+                            steps {
+                                sh 'mkdir build'
+                                dir('build') {
+                                    sh 'cmake ..'
+                                    sh 'make'
+                                }
+                                zip(zipFile: "${packageName}", dir: "${workspace}/build/${projectName}")
                             }
-                            zip(zipFile: "${packageName}", dir:"${workspace}/build/${projectName}")
                         }
                     }
-                }
 
-                stage('Running tests') {
+                    stage('Running tests') {
 
-                }
+                    }
 
-                stage('Publishing to artifactory') {
-                    def packageZip = "${workspace}/${packageName}"
-                    def artifactoryUploadSpec =
-                        """
+                    stage('Publishing to artifactory') {
+                        def packageZip = "${workspace}/${packageName}"
+                        def artifactoryUploadSpec =
+                                """
                             {
                               "files": [
                                 {
@@ -55,7 +53,8 @@ def call(body) {
                               ]
                             }
                         """
-                    def uploadToArtifactory = artifactoryServer.upload spec: artifactoryUploadSpec
+                        def uploadToArtifactory = artifactoryServer.upload spec: artifactoryUploadSpec
+                    }
                 }
             }
         }
