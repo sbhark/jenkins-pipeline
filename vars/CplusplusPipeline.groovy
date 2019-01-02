@@ -18,43 +18,41 @@ def call(body) {
                 def buildNumber = env.BUILD_NUMBER
                 def packageName = "${projectName}-${gitBranch}-${buildNumber}.zip"
 
-                stages {
-                    stage("Checkout ${projectName} from SCM") {
-                        checkout scm
-                    }
+                stage("Checkout ${projectName} from SCM") {
+                    checkout scm
+                }
 
-                    stage('Building project') {
-                        timeout(time: buildTimeout, unit: 'MINUTES') {
-                            steps {
-                                sh 'mkdir build'
-                                dir('build') {
-                                    sh 'cmake ..'
-                                    sh 'make'
-                                }
-                                zip(zipFile: "${packageName}", dir: "${workspace}/build/${projectName}")
+                stage('Building project') {
+                    timeout(time: buildTimeout, unit: 'MINUTES') {
+                        steps {
+                            sh 'mkdir build'
+                            dir('build') {
+                                sh 'cmake ..'
+                                sh 'make'
                             }
+                            zip(zipFile: "${packageName}", dir: "${workspace}/build/${projectName}")
                         }
                     }
+                }
 
-                    stage('Running tests') {
+                stage('Running tests') {
 
-                    }
+                }
 
-                    stage('Publishing to artifactory') {
-                        def packageZip = "${workspace}/${packageName}"
-                        def artifactoryUploadSpec =
-                                """
+                stage('Publishing to artifactory') {
+                    def packageZip = "${workspace}/${packageName}"
+                    def artifactoryUploadSpec =
+                            """
+                        {
+                          "files": [
                             {
-                              "files": [
-                                {
-                                  "pattern": "${executable}",
-                                  "target": "generic-local"
-                                }
-                              ]
+                              "pattern": "${executable}",
+                              "target": "generic-local"
                             }
-                        """
-                        def uploadToArtifactory = artifactoryServer.upload spec: artifactoryUploadSpec
-                    }
+                          ]
+                        }
+                    """
+                    def uploadToArtifactory = artifactoryServer.upload spec: artifactoryUploadSpec
                 }
             }
         }
