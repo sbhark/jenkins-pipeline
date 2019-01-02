@@ -39,6 +39,7 @@ def call(body) {
 
                 stage('Publishing to artifactory') {
                     def packageZip = "${workspace}/${packageName}"
+                    def artifactoryServer = Artifactory.server 'artifactoryc.shunny.local'
                     def artifactoryUploadSpec =
                             """
                         {
