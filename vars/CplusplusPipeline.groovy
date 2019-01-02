@@ -29,7 +29,7 @@ def call(body) {
                             sh 'cmake ..'
                             sh 'make'
                         }
-                        zip(zipFile: "${packageName}", dir: "${workspace}/build/${projectName}")
+                        zip(zipFile: "${packageName}", dir: "${workspace}/build")
                     }
                 }
 
