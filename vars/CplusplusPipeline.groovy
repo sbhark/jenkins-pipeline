@@ -24,14 +24,12 @@ def call(body) {
 
                 stage('Building project') {
                     timeout(time: buildTimeout, unit: 'MINUTES') {
-                        steps {
-                            sh 'mkdir build'
-                            dir('build') {
-                                sh 'cmake ..'
-                                sh 'make'
-                            }
-                            zip(zipFile: "${packageName}", dir: "${workspace}/build/${projectName}")
+                        sh 'mkdir build'
+                        dir('build') {
+                            sh 'cmake ..'
+                            sh 'make'
                         }
+                        zip(zipFile: "${packageName}", dir: "${workspace}/build/${projectName}")
                     }
                 }
 
