@@ -44,7 +44,7 @@ def call(body) {
                         {
                           "files": [
                             {
-                              "pattern": "${executable}",
+                              "pattern": "${packageZip}",
                               "target": "generic-local"
                             }
                           ]
