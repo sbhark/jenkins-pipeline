@@ -34,7 +34,11 @@ def call(body) {
                 }
 
                 stage('Running tests') {
-
+                    timeout(time: buildTimeout, unit: 'MINUTES') {
+                        dir('build') {
+                            sh 'make test'
+                        }
+                    }
                 }
 
                 stage('Publishing to artifactory') {
