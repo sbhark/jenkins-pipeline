@@ -33,6 +33,7 @@ def call(body) {
                     }
                 }
 
+                /*
                 stage('Running tests') {
                     timeout(time: buildTimeout, unit: 'MINUTES') {
                         dir('build') {
@@ -40,6 +41,7 @@ def call(body) {
                         }
                     }
                 }
+                */
 
                 stage('Publishing to artifactory') {
                     def packageZip = "${workspace}/${packageName}"
